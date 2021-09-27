@@ -15,8 +15,8 @@ from app import app
 
 
 # load data
-pdb_path = '/Users/lib14/OneDrive/Research/projects/cosmis/dash_app/pdbs/'
-data_path = '/Users/lib14/OneDrive/Research/projects/cosmis/dash_app'
+pdb_path = 'pdbs/'
+data_path = './'
 dataset_name = 'cosmis_dash.tsv'
 cosmis_df = pd.read_csv(
     os.path.join(data_path, dataset_name),
