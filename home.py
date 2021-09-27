@@ -1,10 +1,10 @@
 import os
 
-import dash_table
 import dash_bio
 import dash_bio_utils.ngl_parser as ngl_parser
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
+from dash import dash_table
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
@@ -73,7 +73,7 @@ home_layout = html.Div(
                 'padding': 10,
             },
         ),
-        html.H4('Explore COSMIS', style={'padding-left': 10}),
+        html.H4('Search by UniProt ID or Gene Name', style={'padding-left': 10}),
         dbc.Row(
             [
                 dbc.Col(
