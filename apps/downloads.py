@@ -15,6 +15,7 @@ download_layout = html.Div(
         ),
         html.Button(
             'Download', n_clicks=0, id='download-button',
+            style={'margin': '10px 0px 10px 0px'}
         ),
         dcc.Download('download-data'),
     ],

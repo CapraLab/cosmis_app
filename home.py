@@ -6,21 +6,27 @@ import dash_html_components as html
 import dash_bio
 import dash_bio_utils.ngl_parser as ngl_parser
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
 import pandas as pd
+
+from github import Github
 
 
 from app import app
 
+github = Github('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')
+repository = github.get_organization('CapraLab').get_repo('cosmis_app')
+
 
 # load data
-pdb_path = './pdbs/'
-data_path = './'
-dataset_name = 'https://github.com/CapraLab/cosmis_app/blob/main/cosmis_dash.tsv'
+pdb_path = 'pdbs/'
+data_path = ''
+# dataset_name = 'https://github.com/CapraLab/cosmis_app/blob/main/cosmis_dash.tsv'
+cosmis_dataset = repository.get_content('cosmis_dash.tsv')
 cosmis_df = pd.read_csv(
     # os.path.join(data_path, dataset_name),
-    dataset_name,
+    cosmis_dataset.decoded_content.decode(),
     sep='\t',
     header=0
 )
@@ -41,117 +47,116 @@ uniprot_to_struct = pd.read_csv(
 
 # layout
 home_layout = html.Div(
-    children=[
+    [
         html.Div(
-            children=[
-                html.Div(
-                    className='app_header',
-                    children=[
-                        html.Span(
-                            '''
-                            COSMIS is a new framework for quantification of 
-                            the constraint on protein-coding genetic variation in 3D spatial neighborhoods. 
-                            The central hypothesis of COSMIS is that amino acid sites connected through 
-                            direct 3D interactions collectively shape the level of constraint on each site. 
-                            It leverages recent advances in computational structure prediction, large-scale 
-                            sequencing data from gnomAD, and a mutation-spectrum-aware statistical model. 
-                            The framework currently maps the landscape of 3D spatial constraint on 6.1 
-                            amino acid sites covering >80% (16,533) of human proteins. As genetic
-                            variation database and protein structure databases grow, we will continuously
-                            update COSMIS.
-                            ''',
-                        ),
-                    ],
-                    style={'margin': 20},
-                ),
+            [
+                html.Span(
+                    '''
+                    The COntact Set MISsense (COSMIS) tolerance framework is a new method
+                    to quantify the constraint on protein-coding genetic variation in 3D 
+                    spatial neighborhoods. The 3D spatial neighboorhood of a residue is
+                    defined by the set of residues that are in direct 3D interaction with
+                    the residue of interest. The central hypothesis of COSMIS is that 
+                    amino acid sites connected through direct 3D interactions collectively 
+                    shape the level of constraint on each site. 
+                    It leverages recent advances in computational structure prediction, large-scale 
+                    sequencing data from gnomAD, and a mutation-spectrum-aware statistical model. 
+                    The framework currently maps the landscape of 3D spatial constraint on 6.1 
+                    amino acid sites covering >80% (16,533) of human proteins. As genetic
+                    variation database and protein structure databases grow, we will continuously
+                    update COSMIS.
+                    '''
+                    ),
             ],
+            style={'padding': 20},
         ),
-        html.Div([
-        html.H4(
-            'Search by UniProt ID or Gene Name',
-            style={'padding-left': 20 , 'margin-bottom':0, 'color': 'grey'}
-        ),
-        dbc.Row(
-                [
-                dbc.Col(
-                    [
-                        dbc.Input(
-                            type='search',
-                            placeholder='P51787 or KCNQ1',
-                            id='uniprot-id',
-                            bs_size='sm',
-                            style={'width':'70%'}
-                        ),
-                        dbc.Button(
-                            'Submit', color='secondary', className='ml-2', outline=True,
-                            n_clicks=0, id='search-button', style={'width': '20%'}
-                        ),
-
-                    ], style={'padding-left': 10, 'display': 'flex'}
+        html.Div(
+            [
+                html.H4(
+                    'Search by UniProt ID or Gene Name',
+                    style={'padding-left': 20 , 'margin-bottom':0, 'color': 'grey'}
                 ),
-                dbc.Col(
-                    [
-                        html.Div(
+                dbc.Row(
+                        [
+                        dbc.Col(
                             [
-                                html.Span('Slide to set a threshold:'),
-                                dcc.Slider(
-                                    id='cosmis-slider',
-                                    min=-8,
-                                    max=8,
-                                    value=8,
-                                    step=0.25,
-                                    marks={x: str(x) for x in range(-8, 9, 2)},
+                                dbc.Input(
+                                    type='search',
+                                    placeholder='P51787 or KCNQ1',
+                                    id='uniprot-id',
+                                    bs_size='sm',
+                                    style={'width':'70%'}
+                                ),
+                                html.Button(
+                                    'Submit', id='search-button', n_clicks=0,
+                                    style={'margin': '0px 10px 0px 10px'}
+                                ),
+
+                            ], style={'padding-left': 10, 'display': 'flex'}
+                        ),
+                        dbc.Col(
+                            [
+                                html.Div(
+                                    [
+                                        html.Span('Slide to set a threshold:'),
+                                        dcc.Slider(
+                                            id='cosmis-slider',
+                                            min=-8,
+                                            max=8,
+                                            value=8,
+                                            step=0.25,
+                                            marks={x: str(x) for x in range(-8, 9, 2)},
+                                        ),
+                                    ],
+                                    style={
+                                        'padding': 10
+                                    },
                                 ),
                             ],
-                            style={
-                                'padding': 10
-                            },
                         ),
-                    ],
+                        ],
+                    no_gutters=True,
+                    className='ml-auto mt-3 mt-md-0',
+                    align='center',
+                    style={'padding': '0px 10px 0px 10px'},
                 ),
-                ],
-            no_gutters=True,
-            className='ml-auto mt-3 mt-md-0',
-            align='center',
-            style={'padding': '0px 10px 0px 10px'},
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
+                dbc.Row(
                     [
-                        dbc.Tabs(
+                        dbc.Col(
                             [
-                                dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-left'),
-                                dbc.Tab(label='3D structure view', tab_id='3d-view-left'),
-                                dbc.Tab(label='Tabular view', tab_id='cosmis-table-left'),
-                            ],
-                            id='tabs-left',
-                            active_tab='cosmis-plot-left',
-                            style={'padding': '0 10 0 10'},
-                        ),
-                        html.Div(
-                            id='tab-content-left', className='p-4'
-                        ),
-                    ], xs=12,sm=12,md=6,lg=6,xl=6),
-                dbc.Col(
-                    [
-                        dbc.Tabs(
+                                dbc.Tabs(
+                                    [
+                                        dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-left'),
+                                        dbc.Tab(label='3D structure view', tab_id='3d-view-left'),
+                                        dbc.Tab(label='Tabular view', tab_id='cosmis-table-left'),
+                                    ],
+                                    id='tabs-left',
+                                    active_tab='cosmis-plot-left',
+                                    style={'padding': '0 10 0 10'},
+                                ),
+                                html.Div(
+                                    id='tab-content-left', className='p-4'
+                                ),
+                            ], xs=12,sm=12,md=6,lg=6,xl=6),
+                        dbc.Col(
                             [
-                                dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-right'),
-                                dbc.Tab(label='3D structure view', tab_id='3d-view-right'),
-                                dbc.Tab(label='Tabular view', tab_id='cosmis-table-right'),
-                            ],
-                            id='tabs-right',
-                            active_tab='3d-view-right',
-                            style={'padding': '0 20 0 20'},
-                        ),
-                        html.Div(
-                            id='tab-content-right', className='p-4'
-                        ),
-                    ], xs=12,sm=12,md=6,lg=6,xl=6)
-            ],
-            style={'padding': '0px 20px 0px 20px'},
-        ),
+                                dbc.Tabs(
+                                    [
+                                        dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-right'),
+                                        dbc.Tab(label='3D structure view', tab_id='3d-view-right'),
+                                        dbc.Tab(label='Tabular view', tab_id='cosmis-table-right'),
+                                    ],
+                                    id='tabs-right',
+                                    active_tab='3d-view-right',
+                                    style={'padding': '0 20 0 20'},
+                                ),
+                                html.Div(
+                                    id='tab-content-right', className='p-4'
+                                ),
+                            ], xs=12,sm=12,md=6,lg=6,xl=6)
+                    ],
+                    style={'padding': '0px 20px 0px 20px'},
+                ),
         ],
             style={
                 'padding': '20px 0px 20px 0px',
@@ -179,7 +184,7 @@ home_layout = html.Div(
                         [
                             dcc.Textarea(
                                 id='input-variants',
-                                placeholder='Type variant IDs\nOne per line',
+                                placeholder='P51787 150 A B\nOne per line',
                                 style={'width': '100%', 'height': 200},
                             ),
                         ],
@@ -219,6 +224,10 @@ home_layout = html.Div(
                 id='variant-query-button',
                 n_clicks=0,
                 style={'margin': '0px 20px 0px 20px'},
+            ),
+            html.Div(
+                id='variant-cosmis-table',
+                style={'margin': '20px 20px 20px 20px'}
             ),
         ],
             style={
@@ -269,7 +278,6 @@ def render_tab_content_right(active_tab, data):
     return 'No data retrieved'
 
 
-
 def generate_table(dataframe, max_rows=10):
     return dash_table.DataTable(
         columns=[
@@ -280,6 +288,37 @@ def generate_table(dataframe, max_rows=10):
         page_size=max_rows,
         data=dataframe.to_dict('records')
     )
+
+
+# textarea callback
+@app.callback(
+    Output('variant-cosmis-table', 'children'),
+    [
+        Input('input-variants', 'value'),
+        Input('variant-query-button', 'n_clicks'),
+    ]
+)
+def retrieve_variant_cosmis(input_variants, n):
+    if not n:
+        return None
+
+    indices = []
+    for variant in input_variants.split('\n'):
+        uniprot_id = variant.split()[0]
+        uniprot_pos = variant.split()[1]
+        indices.append(uniprot_id + '_' + uniprot_pos)
+
+    # create new indices
+    new_df= cosmis_df.astype({'uniprot_pos': str})
+    new_df.set_index(
+        new_df[['uniprot_id', 'uniprot_pos']].agg('_'.join, axis=1), inplace=True
+    )
+
+    # variant rows
+    variant_df = new_df.loc[indices]
+
+    # make a data table
+    return generate_table(variant_df, max_rows=10)
 
 
 @app.callback(
