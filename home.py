@@ -1,10 +1,10 @@
 import os
 
+import dash_table
+import dash_core_components as dcc
+import dash_html_components as html
 import dash_bio
 import dash_bio_utils.ngl_parser as ngl_parser
-from dash import dcc
-from dash import html
-from dash import dash_table
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
@@ -15,8 +15,8 @@ from app import app
 
 
 # load data
-pdb_path = 'pdbs/'
-data_path = './'
+pdb_path = '/Users/lib14/OneDrive/Research/projects/cosmis/cosmis_app/pdbs/'
+data_path = '/Users/lib14/OneDrive/Research/projects/cosmis/cosmis_app/'
 dataset_name = 'cosmis_dash.tsv'
 cosmis_df = pd.read_csv(
     os.path.join(data_path, dataset_name),
@@ -61,91 +61,212 @@ home_layout = html.Div(
                             ''',
                         ),
                     ],
-                    style={'padding': 10},
+                    style={'margin': 20},
                 ),
             ],
         ),
-        html.Div(
-            [
-                html.Hr(),
-            ],
-            style={
-                'padding': 10,
-            },
+        html.Div([
+        html.H4(
+            'Search by UniProt ID or Gene Name',
+            style={'padding-left': 20 , 'margin-bottom':0, 'color': 'grey'}
         ),
-        html.H4('Search by UniProt ID or Gene Name', style={'padding-left': 10}),
+        dbc.Row(
+                [
+                dbc.Col(
+                    [
+                        dbc.Input(
+                            type='search',
+                            placeholder='P51787 or KCNQ1',
+                            id='uniprot-id',
+                            bs_size='sm',
+                            style={'width':'70%'}
+                        ),
+                        dbc.Button(
+                            'Submit', color='secondary', className='ml-2', outline=True,
+                            n_clicks=0, id='search-button', style={'width': '20%'}
+                        ),
+
+                    ], style={'padding-left': 10, 'display': 'flex'}
+                ),
+                dbc.Col(
+                    [
+                        html.Div(
+                            [
+                                html.Span('Slide to set a threshold:'),
+                                dcc.Slider(
+                                    id='cosmis-slider',
+                                    min=-8,
+                                    max=8,
+                                    value=8,
+                                    step=0.25,
+                                    marks={x: str(x) for x in range(-8, 9, 2)},
+                                ),
+                            ],
+                            style={
+                                'padding': 10
+                            },
+                        ),
+                    ],
+                ),
+                ],
+            no_gutters=True,
+            className='ml-auto mt-3 mt-md-0',
+            align='center',
+            style={'padding': '0px 10px 0px 10px'},
+        ),
         dbc.Row(
             [
                 dbc.Col(
-                    dbc.Input(
-                        type='search',
-                        placeholder='UniProt ID or Gene Name',
-                        id='uniprot-id',
-                    )
-                ),
+                    [
+                        dbc.Tabs(
+                            [
+                                dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-left'),
+                                dbc.Tab(label='3D structure view', tab_id='3d-view-left'),
+                                dbc.Tab(label='Tabular view', tab_id='cosmis-table-left'),
+                            ],
+                            id='tabs-left',
+                            active_tab='cosmis-plot-left',
+                            style={'padding': '0 10 0 10'},
+                        ),
+                        html.Div(
+                            id='tab-content-left', className='p-4'
+                        ),
+                    ], xs=12,sm=12,md=6,lg=6,xl=6),
                 dbc.Col(
-                    dbc.Button(
-                        'Search', color='secondary', className='ml-2', n_clicks=0, id='search-button'
-                    ),
-                    width='auto',
-                )
+                    [
+                        dbc.Tabs(
+                            [
+                                dbc.Tab(label='COSMIS plot', tab_id='cosmis-plot-right'),
+                                dbc.Tab(label='3D structure view', tab_id='3d-view-right'),
+                                dbc.Tab(label='Tabular view', tab_id='cosmis-table-right'),
+                            ],
+                            id='tabs-right',
+                            active_tab='3d-view-right',
+                            style={'padding': '0 20 0 20'},
+                        ),
+                        html.Div(
+                            id='tab-content-right', className='p-4'
+                        ),
+                    ], xs=12,sm=12,md=6,lg=6,xl=6)
             ],
-            no_gutters=True,
-            className='ml-auto flex-nowrap mt-3 mt-md-0',
-            align='center',
-            style={'padding': 10},
+            style={'padding': '0px 20px 0px 20px'},
+        ),
+        ],
+            style={
+                'padding': '20px 0px 20px 0px',
+                'border': '1px grey dashed',
+                'border-radius': '8px',
+                'margin': '0px 20px 0px 20px'
+            },
         ),
         html.Div(
             [
                 html.Hr(),
-                html.Span('Slide to set a threshold'),
-                dcc.Slider(
-                    id='cosmis-slider',
-                    min=-8,
-                    max=8,
-                    value=8,
-                    step=0.25,
-                    marks={x: str(x) for x in range(-8, 9, 2)},
-                ),
             ],
             style={
-                'padding': 10
+                'padding': '0px 20px 0px 20px',
+            },
+        ),
+        html.Div([
+            html.H4(
+                'Batch Query by Variant IDs',
+                style={'padding-left': 20 , 'margin-bottom': 0, 'color': 'grey'}
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dcc.Textarea(
+                                id='input-variants',
+                                placeholder='Type variant IDs\nOne per line',
+                                style={'width': '100%', 'height': 200},
+                            ),
+                        ],
+                        style={'display': 'flex', 'padding': 10}
+                    ),
+                    dbc.Col(
+                        [
+                            dcc.Upload(
+                                id='upload-data',
+                                children=html.Div([
+                                    'Drag and Drop or ',
+                                    html.A('Select Files')
+                                ]),
+                                style={
+                                    'width': '100%',
+                                    'height': '200px',
+                                    'lineHeight': '200px',
+                                    'borderWidth': '1px',
+                                    'borderStyle': 'dashed',
+                                    'borderRadius': '5px',
+                                    'textAlign': 'center',
+                                    'padding': '0px'
+                                },
+                                # Allow multiple files to be uploaded
+                                multiple=True
+                            ),
+                            html.Div(id='output-data-upload'),
+                        ], xs=12,sm=12,md=6,lg=6,xl=6),
+                ],
+                no_gutters=True,
+                className='ml-auto mt-3 mt-md-0',
+                align='center',
+                style={'padding': '0px 10px 0px 10px'},
+            ),
+            html.Button(
+                'Submit',
+                id='variant-query-button',
+                n_clicks=0,
+                style={'margin': '0px 20px 0px 20px'},
+            ),
+        ],
+            style={
+                'padding': '20px 0px 20px 0px',
+                'border': '1px grey dashed',
+                'border-radius': '8px',
+                'margin': '0px 20px 0px 20px'
             },
         ),
         dcc.Store(id='store'),
-        dbc.Tabs(
-            [
-                dbc.Tab(label='Plot', tab_id='cosmis-plot'),
-                dbc.Tab(label='3D View', tab_id='3d-view'),
-                dbc.Tab(label='Table', tab_id='cosmis-table'),
-            ],
-            id='tabs',
-            active_tab='cosmis-plot',
-            style={'padding': 10},
-        ),
-        html.Div(
-            id='tab-content', className='p-4'
-        ),
     ],
 )
 
 
 @app.callback(
-    Output('tab-content', 'children'),
+    Output('tab-content-left', 'children'),
     [
-        Input('tabs', 'active_tab'),
+        Input('tabs-left', 'active_tab'),
         Input('store', 'data')
     ]
 )
-def render_tab_content(active_tab, data):
+def render_tab_content_left(active_tab, data):
     if active_tab and data is not None:
-        if active_tab == 'cosmis-plot':
+        if active_tab == 'cosmis-plot-left':
             return dcc.Graph(figure=data['cosmis-plot'])
-        elif active_tab == 'cosmis-table':
+        elif active_tab == 'cosmis-table-left':
             return data['cosmis-table']
-        elif active_tab == '3d-view':
+        elif active_tab == '3d-view-left':
             return data['3d-view']
-    return 'No tab selected'
+    return 'No data retrieved'
+
+
+@app.callback(
+    Output('tab-content-right', 'children'),
+    [
+        Input('tabs-right', 'active_tab'),
+        Input('store', 'data')
+    ]
+)
+def render_tab_content_right(active_tab, data):
+    if active_tab and data is not None:
+        if active_tab == 'cosmis-plot-right':
+            return dcc.Graph(figure=data['cosmis-plot'])
+        elif active_tab == 'cosmis-table-right':
+            return data['cosmis-table']
+        elif active_tab == '3d-view-right':
+            return data['3d-view']
+    return 'No data retrieved'
+
 
 
 def generate_table(dataframe, max_rows=10):

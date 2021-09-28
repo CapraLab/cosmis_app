@@ -18,5 +18,5 @@ download_layout = html.Div(
         ),
         dcc.Download('download-data'),
     ],
-    style = {'padding': 10},
+    style = {'padding': 20},
 )

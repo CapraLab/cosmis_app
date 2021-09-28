@@ -1,11 +1,10 @@
-import dash_core_components as dcc
 import dash_html_components as html
 
 
 about_layout = html.Div(
     [
         html.H4(
-            'About COSMIS'
+            'COSMIS'
         ),
         html.Span(
             '''
@@ -62,5 +61,5 @@ about_layout = html.Div(
             '''
         ),
     ],
-    style={'padding': 10}
+    style={'padding': 20}
 ),

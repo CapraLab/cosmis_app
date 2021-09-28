@@ -1,22 +1,16 @@
-import dash
-from dash import dcc
-from dash import html
+import dash_core_components as dcc
+import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 
+from app import app
 import home
 from apps import downloads, about
 
-app = dash.Dash(
-    __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
-)
 
 server = app.server
 
 page_list = ['', 'home', 'downloads', 'about']
-
 
 navbar = html.Nav(
     [
@@ -48,10 +42,10 @@ navbar = html.Nav(
                 ),
             ],
             pills=True,
-            id='navbar'
+            id='navbar',
         ),
     ],
-    style={'padding': 10}
+    style={'padding': 10, 'background-color': 'lightgrey'}
 )
 
 
