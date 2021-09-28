@@ -15,11 +15,12 @@ from app import app
 
 
 # load data
-pdb_path = '/Users/lib14/OneDrive/Research/projects/cosmis/cosmis_app/pdbs/'
-data_path = '/Users/lib14/OneDrive/Research/projects/cosmis/cosmis_app/'
-dataset_name = 'cosmis_dash.tsv'
+pdb_path = './pdbs/'
+data_path = './'
+dataset_name = 'https://github.com/CapraLab/cosmis_app/blob/main/cosmis_dash.tsv'
 cosmis_df = pd.read_csv(
-    os.path.join(data_path, dataset_name),
+    # os.path.join(data_path, dataset_name),
+    dataset_name,
     sep='\t',
     header=0
 )
