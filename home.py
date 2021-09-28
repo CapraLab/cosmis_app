@@ -10,26 +10,33 @@ from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
 import pandas as pd
 
-from github import Github
-
 
 from app import app
-
-github = Github('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')
-repository = github.get_organization('CapraLab').get_repo('cosmis_app')
 
 
 # load data
 pdb_path = 'pdbs/'
-data_path = ''
+data_path = './'
 # dataset_name = 'https://github.com/CapraLab/cosmis_app/blob/main/cosmis_dash.tsv'
-cosmis_dataset = repository.get_content('cosmis_dash.tsv')
-cosmis_df = pd.read_csv(
-    # os.path.join(data_path, dataset_name),
-    cosmis_dataset.decoded_content.decode(),
+cosmis_dataset_1 = 'cosmis_part1.tsv'
+cosmis_df_1 = pd.read_csv(
+    os.path.join(data_path, cosmis_dataset_1),
     sep='\t',
     header=0
 )
+cosmis_dataset_2 = 'cosmis_part2.tsv'
+cosmis_df_2 = pd.read_csv(
+    os.path.join(data_path, cosmis_dataset_2),
+    sep='\t',
+    header=0
+)
+cosmis_dataset_3 = 'cosmis_part3.tsv'
+cosmis_df_3 = pd.read_csv(
+    os.path.join(data_path, cosmis_dataset_3),
+    sep='\t',
+    header=0
+)
+cosmis_df = pd.concat([cosmis_df_1, cosmis_df_2, cosmis_df_3])
 hgnc_to_uniprot = {}
 with open(os.path.join(data_path, 'hgnc_to_uniprot.tsv'), 'rt') as in_f:
     for l in in_f:
